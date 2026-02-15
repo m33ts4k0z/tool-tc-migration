@@ -1,259 +1,260 @@
-CREATE TABLE `character_brew_of_the_month` (
-  `guid` INT(10) UNSIGNED NOT NULL,
-  `lastEventId` INT(10) UNSIGNED NOT NULL DEFAULT '0',
+--
+-- 2. Create tables that exist in AzerothCore but not in TrinityCore
+-- MySQL 8.4 compatible - all table definitions match current AC base structure
+--
+
+SET FOREIGN_KEY_CHECKS=0;
+
+-- ============================================================================
+-- character_brew_of_the_month
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `character_brew_of_the_month` (
+  `guid` int unsigned NOT NULL,
+  `lastEventId` int unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `log_arena_fights` (
-  `fight_id` INT(10) UNSIGNED NOT NULL,
-  `time` DATETIME NOT NULL,
-  `type` TINYINT(3) UNSIGNED NOT NULL,
-  `duration` INT(10) UNSIGNED NOT NULL,
-  `winner` INT(10) UNSIGNED NOT NULL,
-  `loser` INT(10) UNSIGNED NOT NULL,
-  `winner_tr` SMALLINT(5) UNSIGNED NOT NULL,
-  `winner_mmr` SMALLINT(5) UNSIGNED NOT NULL,
-  `winner_tr_change` SMALLINT(6) NOT NULL,
-  `loser_tr` SMALLINT(5) UNSIGNED NOT NULL,
-  `loser_mmr` SMALLINT(5) UNSIGNED NOT NULL,
-  `loser_tr_change` SMALLINT(6) NOT NULL,
-  `currOnline` INT(10) UNSIGNED NOT NULL,
+-- ============================================================================
+-- active_arena_season
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `active_arena_season` (
+  `season_id` tinyint unsigned NOT NULL,
+  `season_state` tinyint unsigned NOT NULL COMMENT 'Supported 2 states: 0 - disabled; 1 - in progress.'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Insert default active arena season if empty
+INSERT IGNORE INTO `active_arena_season` (`season_id`, `season_state`) VALUES (8, 1);
+
+-- ============================================================================
+-- log_arena_fights
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `log_arena_fights` (
+  `fight_id` int unsigned NOT NULL,
+  `time` datetime NOT NULL,
+  `type` tinyint unsigned NOT NULL,
+  `duration` int unsigned NOT NULL,
+  `winner` int unsigned NOT NULL,
+  `loser` int unsigned NOT NULL,
+  `winner_tr` smallint unsigned NOT NULL,
+  `winner_mmr` smallint unsigned NOT NULL,
+  `winner_tr_change` smallint NOT NULL,
+  `loser_tr` smallint unsigned NOT NULL,
+  `loser_mmr` smallint unsigned NOT NULL,
+  `loser_tr_change` smallint NOT NULL,
+  `currOnline` int unsigned NOT NULL,
   PRIMARY KEY (`fight_id`)
-) ENGINE=MYISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `log_arena_memberstats` (
-  `fight_id` INT(10) UNSIGNED NOT NULL,
-  `member_id` TINYINT(3) UNSIGNED NOT NULL,
-  `name` CHAR(20) NOT NULL,
-  `guid` INT(10) UNSIGNED NOT NULL,
-  `team` INT(10) UNSIGNED NOT NULL,
-  `account` INT(10) UNSIGNED NOT NULL,
-  `ip` CHAR(15) NOT NULL,
-  `damage` INT(10) UNSIGNED NOT NULL,
-  `heal` INT(10) UNSIGNED NOT NULL,
-  `kblows` INT(10) UNSIGNED NOT NULL,
+-- ============================================================================
+-- log_arena_memberstats
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `log_arena_memberstats` (
+  `fight_id` int unsigned NOT NULL,
+  `member_id` tinyint unsigned NOT NULL,
+  `name` char(20) NOT NULL,
+  `guid` int unsigned NOT NULL,
+  `team` int unsigned NOT NULL,
+  `account` int unsigned NOT NULL,
+  `ip` char(15) NOT NULL,
+  `damage` int unsigned NOT NULL,
+  `heal` int unsigned NOT NULL,
+  `kblows` int unsigned NOT NULL,
   PRIMARY KEY (`fight_id`,`member_id`)
-) ENGINE=MYISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `log_encounter` (
-  `time` DATETIME NOT NULL,
-  `map` SMALLINT(5) UNSIGNED NOT NULL,
-  `difficulty` TINYINT(3) UNSIGNED NOT NULL,
-  `creditType` TINYINT(3) UNSIGNED NOT NULL,
-  `creditEntry` INT(10) UNSIGNED NOT NULL,
-  `playersInfo` TEXT NOT NULL
-) ENGINE=MYISAM DEFAULT CHARSET=utf8;
+-- ============================================================================
+-- log_encounter
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `log_encounter` (
+  `time` datetime NOT NULL,
+  `map` smallint unsigned NOT NULL,
+  `difficulty` tinyint unsigned NOT NULL,
+  `creditType` tinyint unsigned NOT NULL,
+  `creditEntry` int unsigned NOT NULL,
+  `playersInfo` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `log_money` (
-  `sender_acc` INT(11) UNSIGNED NOT NULL,
-  `sender_guid` INT(11) UNSIGNED NOT NULL,
-  `sender_name` CHAR(32) CHARACTER SET utf8 NOT NULL,
-  `sender_ip` CHAR(32) CHARACTER SET utf8 NOT NULL,
-  `receiver_acc` INT(11) UNSIGNED NOT NULL,
-  `receiver_name` CHAR(32) CHARACTER SET utf8 NOT NULL,
-  `money` BIGINT(20) UNSIGNED NOT NULL,
-  `topic` CHAR(255) CHARACTER SET utf8 NOT NULL,
-  `date` DATETIME NOT NULL
-) ENGINE=MYISAM DEFAULT CHARSET=latin1;
+-- ============================================================================
+-- log_money (matches current AC base with type column included)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `log_money` (
+  `sender_acc` int unsigned NOT NULL,
+  `sender_guid` int unsigned NOT NULL,
+  `sender_name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sender_ip` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `receiver_acc` int unsigned NOT NULL,
+  `receiver_name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `money` bigint unsigned NOT NULL,
+  `topic` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `date` datetime NOT NULL,
+  `type` tinyint NOT NULL COMMENT '1=COD,2=AH,3=GB DEPOSIT,4=GB WITHDRAW,5=MAIL,6=TRADE'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `gm_subsurveys` (
-  `surveyId` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `subsurveyId` INT(10) UNSIGNED NOT NULL DEFAULT '0',
-  `rank` INT(10) UNSIGNED NOT NULL DEFAULT '0',
-  `comment` TEXT NOT NULL,
-  PRIMARY KEY (`surveyId`,`subsurveyId`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='Player System';
-
---
--- gm_surveys AC commit: e0d36be56ec2b7c7c88c7b86b81512106cef535e
---
+-- ============================================================================
+-- gm_survey: DROP and recreate to match AC structure (adds maxMMR column)
+-- ============================================================================
 DROP TABLE IF EXISTS `gm_survey`;
 CREATE TABLE IF NOT EXISTS `gm_survey` (
   `surveyId` int unsigned NOT NULL AUTO_INCREMENT,
   `guid` int unsigned NOT NULL DEFAULT '0',
   `mainSurvey` int unsigned NOT NULL DEFAULT '0',
-  `comment` longtext NOT NULL,
+  `comment` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `createTime` int unsigned NOT NULL DEFAULT '0',
   `maxMMR` smallint NOT NULL,
   PRIMARY KEY (`surveyId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Player System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Player System';
 
-CREATE TABLE `item_loot_storage` (
-  `containerGUID` INT(10) UNSIGNED NOT NULL,
-  `itemid` INT(10) UNSIGNED NOT NULL,
-  `count` INT(10) UNSIGNED NOT NULL,
-  `item_index` int(10) unsigned default 0 not null,
-  `randomPropertyId` INT(10) NOT NULL,
-  `randomSuffix` INT(10) UNSIGNED NOT NULL,
-  `follow_loot_rules` tinyint(3) unsigned not null,
-  `freeforall` tinyint(3) unsigned not null,
-  `is_blocked` tinyint(3) unsigned not null,
-  `is_counted` tinyint(3) unsigned not null,
-  `is_underthreshold` tinyint(3) unsigned not null,
-  `needs_quest` tinyint(3) unsigned not null,
-  `conditionLootId` int(11) default 0 not null
-) ENGINE=INNODB DEFAULT CHARSET=utf8;
+-- ============================================================================
+-- item_loot_storage (replaces TC's item_loot_items + item_loot_money)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `item_loot_storage` (
+  `containerGUID` int unsigned NOT NULL,
+  `itemid` int unsigned NOT NULL,
+  `count` int unsigned NOT NULL,
+  `item_index` int unsigned NOT NULL DEFAULT '0',
+  `randomPropertyId` int NOT NULL,
+  `randomSuffix` int unsigned NOT NULL,
+  `follow_loot_rules` tinyint unsigned NOT NULL,
+  `freeforall` tinyint unsigned NOT NULL,
+  `is_blocked` tinyint unsigned NOT NULL,
+  `is_counted` tinyint unsigned NOT NULL,
+  `is_underthreshold` tinyint unsigned NOT NULL,
+  `needs_quest` tinyint unsigned NOT NULL,
+  `conditionLootId` int NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `character_entry_point` (
-  `guid` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `joinX` FLOAT NOT NULL DEFAULT '0',
-  `joinY` FLOAT NOT NULL DEFAULT '0',
-  `joinZ` FLOAT NOT NULL DEFAULT '0',
-  `joinO` FLOAT NOT NULL DEFAULT '0',
-  `joinMapId` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Map Identifier',
-  `taxiPath0` INT(10) UNSIGNED DEFAULT 0 NOT NULL,
-  `taxiPath1` INT(10) UNSIGNED DEFAULT 0 NOT NULL,
-  `mountSpell` INT(10) UNSIGNED NOT NULL DEFAULT '0',
+-- ============================================================================
+-- character_entry_point (replaces TC's character_battleground_data)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `character_entry_point` (
+  `guid` int unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `joinX` float NOT NULL DEFAULT '0',
+  `joinY` float NOT NULL DEFAULT '0',
+  `joinZ` float NOT NULL DEFAULT '0',
+  `joinO` float NOT NULL DEFAULT '0',
+  `joinMapId` int unsigned NOT NULL DEFAULT '0' COMMENT 'Map Identifier',
+  `taxiPath0` int unsigned NOT NULL DEFAULT '0',
+  `taxiPath1` int unsigned NOT NULL DEFAULT '0',
+  `mountSpell` int unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='Player System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Player System';
 
-
-CREATE TABLE `channels_bans` (
-  `channelId` INT(10) UNSIGNED NOT NULL,
-  `playerGUID` INT(10) UNSIGNED NOT NULL,
-  `banTime` INT(10) UNSIGNED NOT NULL,
+-- ============================================================================
+-- channels_bans
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `channels_bans` (
+  `channelId` int unsigned NOT NULL,
+  `playerGUID` int unsigned NOT NULL,
+  `banTime` int unsigned NOT NULL,
   PRIMARY KEY (`channelId`,`playerGUID`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
-
---
--- Table structure for table `channels_rights`
---
-
-DROP TABLE IF EXISTS `channels_rights`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `channels_rights` (
-  `name` VARCHAR(128) NOT NULL,
-  `flags` INT(10) UNSIGNED NOT NULL,
-  `speakdelay` INT(10) UNSIGNED NOT NULL,
-  `joinmessage` VARCHAR(255) NOT NULL DEFAULT '',
-  `delaymessage` VARCHAR(255) NOT NULL DEFAULT '',
-  `moderators` TEXT,
+-- ============================================================================
+-- channels_rights
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `channels_rights` (
+  `name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `flags` int unsigned NOT NULL,
+  `speakdelay` int unsigned NOT NULL,
+  `joinmessage` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `delaymessage` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `moderators` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`name`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `channels_rights`
---
-
-
-LOCK TABLES `channels_rights` WRITE;
-/*!40000 ALTER TABLE `channels_rights` DISABLE KEYS */;
-/*!40000 ALTER TABLE `channels_rights` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- character_settings AC commit: d4963f3b83c8a327904addb129d5fd5a15b30d25
---
-DROP TABLE IF EXISTS `character_settings`;
-CREATE TABLE `character_settings` (
-  `guid` INT UNSIGNED NOT NULL,
-  `source` VARCHAR(40) NOT NULL,
-  `data` TEXT NULL,
+-- ============================================================================
+-- character_settings
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `character_settings` (
+  `guid` int unsigned NOT NULL,
+  `source` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`guid`, `source`)
-) ENGINE=MYISAM DEFAULT CHARSET=utf8mb4 COMMENT='Player Settings';
--- TODO Why ENGINE is MYISAM and not InnoDB like the others ?
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Player Settings';
 
---
--- game_event_condition_save AC commit: fc05c82f659692b4c79c85aec1548f6aa0c1d537
---
-DROP TABLE IF EXISTS `game_event_condition_save`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `game_event_condition_save`
-(
-  `eventEntry` tinyint(3) unsigned NOT NULL,
-  `condition_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `done` float DEFAULT '0',
-  PRIMARY KEY (`eventEntry`,`condition_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-
---
--- creature_respawn AC commit: fc05c82f659692b4c79c85aec1548f6aa0c1d537
---
-DROP TABLE IF EXISTS `creature_respawn`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `creature_respawn`
-(
-  `guid` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `respawnTime` int(10) unsigned NOT NULL DEFAULT '0',
-  `mapId` smallint(10) unsigned NOT NULL DEFAULT '0',
-  `instanceId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Instance Identifier',
+-- ============================================================================
+-- creature_respawn (replaces TC's respawn table for creatures)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `creature_respawn` (
+  `guid` int unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `respawnTime` int unsigned NOT NULL DEFAULT '0',
+  `mapId` smallint unsigned NOT NULL DEFAULT '0',
+  `instanceId` int unsigned NOT NULL DEFAULT '0' COMMENT 'Instance Identifier',
   PRIMARY KEY (`guid`,`instanceId`),
   KEY `idx_instance` (`instanceId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Grid Loading System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Grid Loading System';
 
---
--- gameobject_respawn AC commit: fc05c82f659692b4c79c85aec1548f6aa0c1d537
---
-DROP TABLE IF EXISTS `gameobject_respawn`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `gameobject_respawn`
-(
-  `guid` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `respawnTime` int(10) unsigned NOT NULL DEFAULT '0',
-  `mapId` smallint(10) unsigned NOT NULL DEFAULT '0',
-  `instanceId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Instance Identifier',
+-- ============================================================================
+-- gameobject_respawn (replaces TC's respawn table for gameobjects)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `gameobject_respawn` (
+  `guid` int unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `respawnTime` int unsigned NOT NULL DEFAULT '0',
+  `mapId` smallint unsigned NOT NULL DEFAULT '0',
+  `instanceId` int unsigned NOT NULL DEFAULT '0' COMMENT 'Instance Identifier',
   PRIMARY KEY (`guid`,`instanceId`),
   KEY `idx_instance` (`instanceId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Grid Loading System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Grid Loading System';
 
---
--- instance_saved_go_state_data AC commit: a6a2ca8ef76716f5b58b4ed2ae53d0bde424775b
---
-DROP TABLE IF EXISTS `instance_saved_go_state_data`;
+-- ============================================================================
+-- instance_saved_go_state_data
+-- ============================================================================
 CREATE TABLE IF NOT EXISTS `instance_saved_go_state_data` (
-  `id` INT UNSIGNED NOT NULL COMMENT 'instance.id',
-  `guid` INT UNSIGNED NOT NULL COMMENT 'gameobject.guid',
-  `state` TINYINT UNSIGNED DEFAULT '0' COMMENT 'gameobject.state',
+  `id` int unsigned NOT NULL COMMENT 'instance.id',
+  `guid` int unsigned NOT NULL COMMENT 'gameobject.guid',
+  `state` tinyint unsigned DEFAULT '0' COMMENT 'gameobject.state',
   PRIMARY KEY (`id`, `guid`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- mail_server_character AC commit: 7ecd73867419c807c9869ebeb73c7ca4e39cd1c8
---
-DROP TABLE IF EXISTS `mail_server_character`;
+-- ============================================================================
+-- mail_server_character
+-- ============================================================================
 CREATE TABLE IF NOT EXISTS `mail_server_character` (
-  `guid` INT UNSIGNED NOT NULL,
-  `mailId` INT UNSIGNED NOT NULL,
+  `guid` int unsigned NOT NULL,
+  `mailId` int unsigned NOT NULL,
   PRIMARY KEY (`guid`, `mailId`)
-) ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- mail_server_template AC commit: 7ecd73867419c807c9869ebeb73c7ca4e39cd1c8
---
-DROP TABLE IF EXISTS `mail_server_template`;
+-- ============================================================================
+-- mail_server_template
+-- ============================================================================
 CREATE TABLE IF NOT EXISTS `mail_server_template` (
-  `id` INT unsigned NOT NULL AUTO_INCREMENT,
-  `reqLevel` TINYINT unsigned NOT NULL DEFAULT 0,
-  `reqPlayTime` INT unsigned NOT NULL DEFAULT 0,
-  `moneyA` INT unsigned NOT NULL DEFAULT 0,
-  `moneyH` INT unsigned NOT NULL DEFAULT 0,
-  `itemA` INT unsigned NOT NULL DEFAULT 0,
-  `itemCountA` INT unsigned NOT NULL DEFAULT 0,
-  `itemH` INT unsigned NOT NULL DEFAULT 0,
-  `itemCountH` INT unsigned NOT NULL DEFAULT 0,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `reqLevel` tinyint unsigned NOT NULL DEFAULT 0,
+  `reqPlayTime` int unsigned NOT NULL DEFAULT 0,
+  `moneyA` int unsigned NOT NULL DEFAULT 0,
+  `moneyH` int unsigned NOT NULL DEFAULT 0,
+  `itemA` int unsigned NOT NULL DEFAULT 0,
+  `itemCountA` int unsigned NOT NULL DEFAULT 0,
+  `itemH` int unsigned NOT NULL DEFAULT 0,
+  `itemCountH` int unsigned NOT NULL DEFAULT 0,
   `subject` text NOT NULL,
   `body` text NOT NULL,
-  `active` TINYINT unsigned NOT NULL DEFAULT 1,
+  `active` tinyint unsigned NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- recovery_item AC commit: 333dab2e8515e6d8ee3b721c042f5576fde9be2d
---
+-- ============================================================================
+-- recovery_item
+-- ============================================================================
 CREATE TABLE IF NOT EXISTS `recovery_item` (
-  `Id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `Guid` int(11) unsigned NOT NULL DEFAULT 0,
-  `ItemEntry` mediumint(8) unsigned NOT NULL DEFAULT 0,
-  `Count` int(11) unsigned NOT NULL DEFAULT 0,
+  `Id` int unsigned NOT NULL AUTO_INCREMENT,
+  `Guid` int unsigned NOT NULL DEFAULT 0,
+  `ItemEntry` mediumint unsigned NOT NULL DEFAULT 0,
+  `Count` int unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`Id`),
   KEY `idx_guid` (`Guid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- Recreate game_event_condition_save to match AC structure
+-- ============================================================================
+DROP TABLE IF EXISTS `game_event_condition_save`;
+CREATE TABLE `game_event_condition_save` (
+  `eventEntry` tinyint unsigned NOT NULL,
+  `condition_id` int unsigned NOT NULL DEFAULT '0',
+  `done` float DEFAULT '0',
+  PRIMARY KEY (`eventEntry`,`condition_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS=1;

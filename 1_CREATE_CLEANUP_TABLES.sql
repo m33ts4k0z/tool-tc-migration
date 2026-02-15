@@ -11224,4 +11224,17 @@ INSERT INTO `__spell_ranks` VALUES ('75593', '75446', '2');
 INSERT INTO `__spell_ranks` VALUES ('75593', '75447', '3');
 
 
-ALTER TABLE `characters` ADD COLUMN `innTriggerId` INT UNSIGNED NOT NULL AFTER `deleteDate`;
+-- Conditionally add innTriggerId column to characters (MySQL 8.4 compatible, no DELIMITER needed)
+SET @col_exists = (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'characters' AND column_name = 'innTriggerId');
+SET @sql = IF(@col_exists = 0, 'ALTER TABLE `characters` ADD COLUMN `innTriggerId` INT UNSIGNED NOT NULL DEFAULT 0 AFTER `deleteDate`', 'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+DROP TABLE IF EXISTS `profanity_name`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `profanity_name` (
+  `name` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
